@@ -1,6 +1,6 @@
 !<template>
   <Filter />
-
+<Button class="add-btn">Thêm</Button>
   <table>
     <thead>
       <tr>
@@ -13,9 +13,9 @@
     </thead>
     <tbody>
       <tr v-for="(user, index) in paginatedData" :key="index">
-        <td>{{ user.username }}</td>
-        <td>{{ user.role }}</td>
-        <td>{{ user.name }}</td>
+        <td>{{ user.userName }}</td>
+        <td>{{ user.empNumber }}</td>
+        <td>{{ user.modifiedUserId }}</td>
         <td>{{ user.status }}</td>
         <td>
           <button class="edit-btn">Sửa</button>
@@ -42,48 +42,7 @@ export default {
       currentPage: 1,
       rowsPerPage: 5,
       users: [
-        {
-          username: "tungcx",
-          role: "Thực tập sinh",
-          name: "Cao Xuân Tùng",
-          status: "Đang hoạt động",
-        },
-        {
-          username: "linhht",
-          role: "Nhân viên",
-          name: "Hà Tường Linh",
-          status: "Đã nghỉ việc",
-        },
-        {
-          username: "huyvq",
-          role: "Quản lý",
-          name: "Vũ Quốc Huy",
-          status: "Đang hoạt động",
-        },
-        {
-          username: "anhnk",
-          role: "Thực tập sinh",
-          name: "Nguyễn Khánh Anh",
-          status: "Đang hoạt động",
-        },
-        {
-          username: "minhpt",
-          role: "Nhân viên",
-          name: "Phạm Tuấn Minh",
-          status: "Đang hoạt động",
-        },
-        {
-          username: "ngoclt",
-          role: "Nhân viên",
-          name: "Lê Thị Ngọc",
-          status: "Đã nghỉ việc",
-        },
-        {
-          username: "hieupt",
-          role: "Thực tập sinh",
-          name: "Phan Trọng Hiếu",
-          status: "Đang hoạt động",
-        },
+    
       ],
     };
   },
@@ -109,11 +68,36 @@ export default {
         this.currentPage--;
       }
     },
+    async fetchData() {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.get(`${Apiurl}users`, {
+          params: {
+            page: this.currentPage - 1,
+            size: this.rowsPerPage,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        this.users = response.data.content || [];
+        console.log("Data loaded:", this.users);
+      } catch (error) {
+        console.error("Error fetching data:", error.response || error);
+      }
+    },
+  },
+  mounted() {
+    this.fetchData();
   },
 };
 </script>
+
 <script setup>
 import Filter from "../../components/Filter.vue";
+import axios from "axios";
+import { Apiurl } from "../../config/Url";
 </script>
 
 <style scoped>
@@ -152,7 +136,21 @@ button {
   border-radius: 20px;
   border: solid black 0px;
 }
-
+.add-btn {
+  margin-left: auto;
+  margin-right: 20px;
+  display: block;
+  background-color: green;
+  color: white;
+  border-radius: 5px;
+  width:10%;
+  height: 30px;
+  background-color: green;
+  font-size: 15px;
+  margin: 5px;
+  border-radius: 20px;
+  border: solid black 0px;
+}
 .delete-btn {
   background-color: red;
   color: white;

@@ -1,6 +1,6 @@
 <template>
   <div class="sidebar">
-    <div class="logo" style="width: 100px;">
+    <div class="logo" style="width: 100px">
       <img src="../assets/logo.png" style="width: 200px" />
       <span></span>
     </div>
@@ -20,7 +20,7 @@ export default {
         { name: "Admin", router: "/" },
         { name: "PIM", router: "/PIM" },
         { name: "Leave", router: "/leave/list-Leave" },
-        { name: "Time" },
+        { name: "Time", router: "/time" },
         { name: "Notification", router: "/notification" },
         { name: "News", router: "/news" },
         { name: "Blogs", router: "/blogs" },

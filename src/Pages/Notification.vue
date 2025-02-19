@@ -1,22 +1,34 @@
 !<template>
-    <Filter />
-  
+  <div class="table-responsive">
     <table>
       <thead>
         <tr>
-          <th>Username</th>
-          <th>User Role</th>
-          <th>Employee Name</th>
+          <th>Hình ảnh</th>
+          <th>Banner</th>
+          <th>tên</th>
+          <th>Mô tả</th>
+          <th>lượt xem</th>
           <th>Trạng thái</th>
-          <th>Hành động</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(user, index) in paginatedData" :key="index">
-          <td>{{ user.username }}</td>
-          <td>{{ user.role }}</td>
-          <td>{{ user.name }}</td>
-          <td>{{ user.status }}</td>
+        <tr v-for="(notifications, index) in paginatedData" :key="index">
+          <td>
+            <img
+              :src="Imageurl + notifications.image"
+              alt="Image"
+            />
+          </td>
+          <td>
+            <img
+              :src="Imageurl + notifications.banner"
+              alt="banner"
+            />
+          </td>
+          <td>{{ notifications.name }}</td>
+          <td>{{ notifications.shortDescription }}</td>
+          <td>{{ notifications.viewer }}</td>
+          <td>{{ notifications.status }}</td>
           <td>
             <button class="edit-btn">Sửa</button>
             <button class="delete-btn">Xóa</button>
@@ -24,171 +36,199 @@
         </tr>
       </tbody>
     </table>
-  
-    <!-- Pagination -->
-    <div class="pagination">
-      <button @click="prevPage" :disabled="currentPage === 1">Trước</button>
-      <span>Trang {{ currentPage }} / {{ totalPages }}</span>
-      <button @click="nextPage" :disabled="currentPage === totalPages">
-        Sau
-      </button>
-    </div>
-  </template>
+  </div>
+  <!-- Pagination -->
+  <div class="pagination">
+    <button @click="prevPage" :disabled="currentPage === 1">Trước</button>
+    <span>Trang {{ currentPage }} / {{ totalPages }}</span>
+    <button @click="nextPage" :disabled="currentPage === totalPages">
+      Sau
+    </button>
+  </div>
+</template>
   
   <script  >
-  export default {
-    data() {
-      return {
-        currentPage: 1,
-        rowsPerPage: 5,
-        users: [
-          {
-            username: "tungcx",
-            role: "Thực tập sinh",
-            name: "Cao Xuân Tùng",
-            status: "Đang hoạt động",
-          },
-          {
-            username: "linhht",
-            role: "Nhân viên",
-            name: "Hà Tường Linh",
-            status: "Đã nghỉ việc",
-          },
-          {
-            username: "huyvq",
-            role: "Quản lý",
-            name: "Vũ Quốc Huy",
-            status: "Đang hoạt động",
-          },
-          {
-            username: "anhnk",
-            role: "Thực tập sinh",
-            name: "Nguyễn Khánh Anh",
-            status: "Đang hoạt động",
-          },
-          {
-            username: "minhpt",
-            role: "Nhân viên",
-            name: "Phạm Tuấn Minh",
-            status: "Đang hoạt động",
-          },
-          {
-            username: "ngoclt",
-            role: "Nhân viên",
-            name: "Lê Thị Ngọc",
-            status: "Đã nghỉ việc",
-          },
-          {
-            username: "hieupt",
-            role: "Thực tập sinh",
-            name: "Phan Trọng Hiếu",
-            status: "Đang hoạt động",
-          },
-        ],
-      };
+import axios from "axios";
+import { Apiurl } from "../config/Url";
+export default {
+  data() {
+    return {
+      currentPage: 1,
+      rowsPerPage: 5,
+      notifications: [],
+    };
+  },
+  computed: {
+    totalPages() {
+      return Math.ceil(this.notifications.length / this.rowsPerPage);
     },
-    computed: {
-      totalPages() {
-        return Math.ceil(this.users.length / this.rowsPerPage); // Tổng số trang
-      },
-      paginatedData() {
-        // Dữ liệu của trang hiện tại
-        const start = (this.currentPage - 1) * this.rowsPerPage;
-        const end = start + this.rowsPerPage;
-        return this.users.slice(start, end);
-      },
+    paginatedData() {
+      const start = (this.currentPage - 1) * this.rowsPerPage;
+      const end = start + this.rowsPerPage;
+      return this.notifications.slice(start, end);
     },
-    methods: {
-      nextPage() {
-        if (this.currentPage < this.totalPages) {
-          this.currentPage++;
-        }
-      },
-      prevPage() {
-        if (this.currentPage > 1) {
-          this.currentPage--;
-        }
-      },
+  },
+  methods: {
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
     },
-  };
-  </script>
-  <script setup>
-  import Filter from "../../components/Filter.vue";
-  </script>
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
+    async fetchData() {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.get(`${Apiurl}notifications`, {
+          params: {
+            page: this.currentPage - 1,
+            size: this.rowsPerPage,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        this.notifications = response.data.content || [];
+        console.log("Data loaded:", this.notifications);
+      } catch (error) {
+        console.error("Error fetching data:", error.response || error);
+      }
+    },
+  },
+  mounted() {
+    this.fetchData();
+  },
+};
+</script>
+
   
-  <style scoped>
+<style scoped>
+.table-responsive {
+  overflow-x: auto;
+  margin: 20px 0;
+  box-shadow: 0 0 0 1px #ddd; /* Thêm viền cho container */
+  border-radius: 4px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px; /* Giữ độ rộng tối thiểu cho bảng */
+}
+
+th,
+td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .table-responsive {
+    box-shadow: none; /* Bỏ viền trên mobile */
+  }
+
   table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
+    min-width: unset;
   }
-  
-  th,
-  td {
+
+  thead {
+    display: none;
+  }
+
+  tr {
+    display: block;
+    margin-bottom: 1rem;
     border: 1px solid #ddd;
-    padding: 8px;
-    text-align: center;
+    border-radius: 4px;
   }
-  
-  th {
-    background-color: #f4f4f4;
-    font-weight: bold;
-  }
-  
-  button {
-    padding: 5px 10px;
-    cursor: pointer;
-  }
-  
-  .edit-btn {
-    background-color: green;
-    color: white;
-    border-radius: 5px;
-    width: 50px;
-    height: 30px;
-    background-color: green;
-    font-size: 15px;
-    margin: 5px;
-    border-radius: 20px;
-    border: solid black 0px;
-  }
-  
-  .delete-btn {
-    background-color: red;
-    color: white;
-    border-radius: 5px;
-    width: 50px;
-    height: 30px;
-    background-color: red;
-    font-size: 15px;
-    margin: 5px;
-    border-radius: 20px;
-    border: solid black 0px;
-  }
-  
-  .pagination {
+
+  td {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    margin-top: 20px;
+    text-align: right;
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
   }
-  
-  .pagination button {
-    margin: 0 5px;
-    padding: 5px 10px;
-    border: none;
-    border-radius: 5px;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
+
+  td:last-child {
+    border-bottom: 0;
   }
-  
-  .pagination button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    margin-right: 1rem;
+    text-align: left;
+    color: rgba(0, 0, 0, 0.8);
   }
-  
-  .pagination span {
-    margin: 0 10px;
-  }
-  </style>
+}
+
+button {
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.edit-btn {
+  background-color: green;
+  color: white;
+  border-radius: 5px;
+  width: 50px;
+  height: 30px;
+  background-color: green;
+  font-size: 15px;
+  margin: 5px;
+  border-radius: 20px;
+  border: solid black 0px;
+}
+
+.delete-btn {
+  background-color: red;
+  color: white;
+  border-radius: 5px;
+  width: 50px;
+  height: 30px;
+  background-color: red;
+  font-size: 15px;
+  margin: 5px;
+  border-radius: 20px;
+  border: solid black 0px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  margin: 0 5px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  margin: 0 10px;
+}
+</style>
